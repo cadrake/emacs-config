@@ -74,8 +74,7 @@
 
 ;; Magit config
 (use-package! magit
-  :ensure t
-  :init (setq magit-git-executable "/usr/local/bin/git")
+  :init (setq magit-git-executable "/usr/bin/git")
   :bind (("C-c v b" . magit-branch-and-checkout)))
 
 ;; Enable backup files and send them to a better directory
