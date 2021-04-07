@@ -24,8 +24,7 @@
   (doom-themes-org-config))
 
 ;; DOOM modeline
-(setq doom-modeline-icon t
-      doom-modeline-major-mode-icon t
+(setq doom-modeline-major-mode-icon t
       doom-modeline-unicode-fallback t
       doom-modeline-vcs-max-length 20)
 
@@ -34,7 +33,7 @@
 
 ;; Hilight selected line
 (global-hl-line-mode 1)
-(set-face-background hl-line-face "gray13")
+(set-face-background 'hl-line "gray13")
 
 ;; Hilight line numbers a bit better
 (set-face-background 'line-number "gray6")
