@@ -23,6 +23,12 @@
   ;; corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
+;; DOOM modeline
+(setq doom-modeline-icon t
+      doom-modeline-major-mode-icon t
+      doom-modeline-unicode-fallback t
+      doom-modeline-vcs-max-length 20)
+
 ;; Display absolute line numbers
 (setq display-line-numbers-type t)
 
