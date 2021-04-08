@@ -140,12 +140,13 @@
 
 ;; Org Mode config
 (use-package! org
-  :init (setq org-directory "~/Documents/org"
-              org-agenda-files '("~/Documents/org/work")
-              org-hide-emphasis-markers t
-              truncate-string-ellipsis ""))
+  :init (setq org-directory "/mnt/c/Users/Caleb Drake/Dropbox/org"
+              org-agenda-files '("/mnt/c/Users/Caleb Drake/Dropbox/org/work" "/mnt/c/Users/Caleb Drake/Dropbox/org/personal")
+              org-hide-emphasis-markers t))
 (add-hook! org-mode (electric-indent-local-mode -1))
 (add-hook! org-mode :append #'visual-line-mode #'variable-pitch-mode)
+(after! org
+  (setq org-startup-indented nil))
 
 ;; Associate yaml-mode with yaml files and enable whitespace
 (use-package! yaml-mode
