@@ -65,9 +65,6 @@
 ;; Kill with C-k instead of clear
 (setq kill-whole-line t)
 
-;; Whitespace cleanup
-(add-hook! 'after-save-hook #'delete-trailing-whitespace)
-
 ;; Enable smartscan mode
 (global-smartscan-mode t)
 
@@ -97,10 +94,21 @@
       kept-new-versions 5    ; keep some new versions
       kept-old-versions 2)   ; and some old ones, too
 
-;; Whitespace Config
+;; No word wrapping
+(set-default 'truncate-lines nil)
+(setq truncate-partial-width-windows t)
+(global-visual-line-mode 0)
+
+;; Fix font caching
+(setq inhibit-compacting-font-caches t)
+
+;; Whitespace cleanup on save
+(add-hook! 'after-save-hook #'delete-trailing-whitespace)
+
+;; Whitespace config
 (setq-default indent-tabs-mode nil)
-(setq whitespace-style (delete 'lines-tail whitespace-style))
-(setq tab-width 4)
+(setq-default tab-width 4)
+(setq-default whitespace-style (delete 'lines-tail whitespace-style))
 
 ;; Disable exit confirmation
 (setq confirm-kill-emacs nil)
@@ -113,8 +121,6 @@
   :init (setq treemacs-no-png-images t
               treemacs-space-between-root-nodes nil
               treemacs-collapse-dirs 5)
-  :bind (("C-c C-n" . treemacs-create-file)
-         ("C-c C-d" . treemacs-delete))
   :config
   ;; Custom nerd icons theme
   (treemacs-load-theme "nerd-icons")
@@ -140,23 +146,36 @@
 
 ;; Org Mode config
 (use-package! org
-  :init (setq org-directory "/mnt/c/Users/Caleb Drake/Dropbox/org"
-              org-agenda-files '("/mnt/c/Users/Caleb Drake/Dropbox/org/work" "/mnt/c/Users/Caleb Drake/Dropbox/org/personal")
-              org-hide-emphasis-markers t))
-(add-hook! org-mode (electric-indent-local-mode -1))
-(add-hook! org-mode :append #'visual-line-mode #'variable-pitch-mode)
+  :init (setq org-directory "~/Dropbox/org"
+              org-agenda-files '("~/Dropbox/org/work/attentive")
+              org-hide-emphasis-markers t)
+  :hook (org-mode . (lambda () (electric-indent-local-mode -1)))
+  :hook (org-mode . (lambda () (visual-line-mode 0))))
+(use-package! org-fancy-priorities
+  :config (setq org-fancy-priorities-list '("" " " "  ")))
 (after! org
   (setq org-startup-indented nil))
 
 ;; Associate yaml-mode with yaml files and enable whitespace
 (use-package! yaml-mode
   :hook (yaml-mode . (lambda () "Show whitespace in yaml mode" (whitespace-mode 1)))
+  :hook (yaml-mode . (lambda () "Disable word wrap" (visual-line-mode 0)))
   :mode "\\.yml\\'"
   :mode "\\.yaml\\'")
 
 ;; Associate dockerfile-mode with Dockerfile
 (use-package! dockerfile-mode
   :mode "Dockerfile\\'")
+
+;; Associate jenkins files with jenkinsfile-mode
+(use-package! jenkinsfile-mode
+  :mode "Jenkinsfile\\'"
+  :mode "jenkins.pipeline\\'")
+
+;; Associate csv-mode with csv's
+(use-package! csv-mode
+  :hook (csv-mode . (lambda () "Disable word wrap" (visual-line-mode 0)))
+  :mode "\\.csv\\'")
 
 ;; Configure markdown-mode based on common md files and render with pandoc
 (use-package! markdown-mode
@@ -174,12 +193,17 @@
 (setq company-minimum-prefix-length 2
       company-idle-delay 0.2)
 
+;; Java Config
+(setq-hook! 'java-mode-hook c-basic-offset 4)
+(setq-hook! 'java-mode-hook tab-width 4)
+(setq-hook! 'java-mode-hook indent-tabs-mode nil)
+
 ;; LSP Mode config
 (use-package! lsp-mode
   :init (setq lsp-idle-delay 0.500
               lsp-log-io nil
               lsp-auto-guess-root t
-              lsp-java-enable-file-watch nil
+              lsp-enable-file-watchers nil
               lsp-keymap-prefix "C-c C-l"
               read-process-output-max (* 1024 1024)))
 

@@ -5,6 +5,9 @@
 (package! web-mode)
 (package! smartscan)
 (package! expand-region)
+(package! groovy-mode)
+(package! jenkinsfile-mode)
+(package! csv-mode)
 
 (package! all-the-icons)
 ;; (package! nerd-icons
