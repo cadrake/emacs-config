@@ -5,7 +5,7 @@
 ```
 
 ```
-## WSK/Linux
+## WSL2/Linux
 ```
 
 ```

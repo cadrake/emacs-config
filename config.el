@@ -155,6 +155,7 @@
   :config (setq org-fancy-priorities-list '("" " " "  ")))
 (after! org
   (setq org-startup-indented nil))
+(map! "C-c [" #'org-insert-structure-template) ;; C-, is funky with terminals
 
 ;; Associate yaml-mode with yaml files and enable whitespace
 (use-package! yaml-mode
