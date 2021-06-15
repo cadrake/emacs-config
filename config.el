@@ -120,6 +120,7 @@
 (use-package! treemacs
   :init (setq treemacs-no-png-images t
               treemacs-space-between-root-nodes nil
+              treemacs-window-background-color '("#1f1f1f")
               treemacs-collapse-dirs 5)
   :config
   ;; Custom nerd icons theme
@@ -142,7 +143,9 @@
   :init (setq projectile-auto-discover nil
               projectile-indexing-method 'alien
               projectile-sort-order 'recentf
-              projectile-require-project-root t))
+              projectile-globally-ignored-files '(".DS_Store" "Icon" "TAGS")
+              projectile-globally-ignored-file-suffixes '(".elc" ".pyc" ".o" ".class")
+              projectile-require-project-root nil))
 
 ;; Org Mode config
 (use-package! org
@@ -199,11 +202,14 @@
 (setq-hook! 'java-mode-hook tab-width 4)
 (setq-hook! 'java-mode-hook indent-tabs-mode nil)
 
+;; Json Mode Indentation
+(setq-hook! 'json-mode-hook js-indent-level 2)
+
 ;; LSP Mode config
 (use-package! lsp-mode
   :init (setq lsp-idle-delay 0.500
               lsp-log-io nil
-              lsp-auto-guess-root t
+              lsp-auto-guess-root nil
               lsp-enable-file-watchers nil
               lsp-keymap-prefix "C-c C-l"
               read-process-output-max (* 1024 1024)))
@@ -223,12 +229,12 @@
   (fset #'all-the-icons-icon-for-file #'nerd-icons-icon-for-file)
   (fset #'all-the-icons-icon-for-mode #'nerd-icons-icon-for-mode)
   (fset #'all-the-icons-icon-for-url #'nerd-icons-icon-for-url)
+  (fset #'all-the-icons-icon-for-buffer #'nerd-icons-icon-for-buffer)
 
   (fset #'all-the-icons-icon-family #'nerd-icons-icon-family)
   (fset #'all-the-icons-icon-family-for-buffer #'nerd-icons-icon-family-for-buffer)
   (fset #'all-the-icons-icon-family-for-file #'nerd-icons-icon-family-for-file)
   (fset #'all-the-icons-icon-family-for-mode #'nerd-icons-icon-family-for-mode)
-  (fset #'all-the-icons-icon-for-buffer #'nerd-icons-icon-for-buffer)
 
   (fset #'all-the-icons-faicon #'nerd-icons-faicon)
   (fset #'all-the-icons-octicon #'nerd-icons-octicon)

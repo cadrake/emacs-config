@@ -8,6 +8,8 @@
 (package! groovy-mode)
 (package! jenkinsfile-mode)
 (package! csv-mode)
+(package! vdiff)
+(package! json-mode)
 
 (package! all-the-icons)
 ;; (package! nerd-icons
