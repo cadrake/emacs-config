@@ -120,7 +120,7 @@
 (use-package! treemacs
   :init (setq treemacs-no-png-images t
               treemacs-space-between-root-nodes nil
-              treemacs-window-background-color '("#1f1f1f")
+              treemacs-window-background-color '("#1a1a1a")
               treemacs-collapse-dirs 5)
   :config
   ;; Custom nerd icons theme
