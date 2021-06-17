@@ -24,12 +24,17 @@
   (doom-themes-org-config))
 
 ;; DOOM modeline
-(setq doom-modeline-unicode-fallback t
-      ;;doom-modeline-icon t ;; Still broken
+(setq doom-modeline-icon t
+      doom-modeline-major-mode-icon t
+      doom-modeline-major-mode-color-icon t
+      doom-modeline-unicode-fallback t
       doom-modeline-vcs-max-length 20)
 
 ;; Display absolute line numbers
 (setq display-line-numbers-type t)
+
+;; Terminal capabilities (Avoids phanton self inserts)
+(setq xterm-extra-capabilities nil)
 
 ;; Hilight selected line
 (global-hl-line-mode 1)
@@ -253,6 +258,11 @@
   (fset #'all-the-icons-material #'nerd-icons-material)
   (fset #'all-the-icons-alltheicon #'nerd-icons-material)
   (fset #'all-the-icons-wicon #'nerd-icons-wicon))
+
+;; Debugging
+;;(setq debug-on-error t)
+;;(debug-on-entry 'self-insert-command)
+
 
 ;; LSP config for Java 8 Coretto
 (setq lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/0.57.0/jdt-language-server-0.57.0-202006172108.tar.gz"
