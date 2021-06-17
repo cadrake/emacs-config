@@ -1,17 +1,24 @@
+;; Extra Modes
 (package! dockerfile-mode)
 (package! yaml-mode)
 (package! terraform-mode)
 (package! markdown-mode)
 (package! web-mode)
-(package! smartscan)
-(package! expand-region)
 (package! groovy-mode)
 (package! jenkinsfile-mode)
 (package! csv-mode)
-(package! vdiff)
 (package! json-mode)
 
+;; Helpers
+(package! smartscan)
+(package! expand-region)
+(package! vdiff)
+
+;; UI Improvements
 (package! all-the-icons)
+(package! all-the-icons-ivy-rich)
+
+;; My Stuff
 ;; Local nerd-icons for development
 ;; (package! nerd-icons
 ;;   :recipe (:local-repo "/Users/adrake/Code/elisp/nerd-icons.el"
@@ -19,5 +26,3 @@
 ;; Github nerd-icons for production
 (package! nerd-icons
   :recipe (:host github :repo "cadrake/nerd-icons.el"))
-;; (package! icons-in-terminal
-;;   :recipe (:host github :repo "seagle0128/icons-in-terminal.el"))

@@ -24,8 +24,8 @@
   (doom-themes-org-config))
 
 ;; DOOM modeline
-(setq doom-modeline-major-mode-icon t
-      doom-modeline-unicode-fallback t
+(setq doom-modeline-unicode-fallback t
+      ;;doom-modeline-icon t ;; Still broken
       doom-modeline-vcs-max-length 20)
 
 ;; Display absolute line numbers
@@ -33,11 +33,13 @@
 
 ;; Hilight selected line
 (global-hl-line-mode 1)
-(set-face-background 'hl-line "gray13")
+(custom-set-faces!
+  '(hl-line :background "gray13"))
 
 ;; Hilight line numbers a bit better
-(set-face-background 'line-number "gray6")
-(set-face-background 'line-number-current-line "gray16")
+(custom-set-faces!
+  '(line-number :background "gray6")
+  '(line-number-current-line :background "gray16"))
 
 ;; Only ask y or n
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -46,9 +48,8 @@
 (show-paren-mode 1)
 (setq show-paren-delay 0
       show-paren-style 'parenthesis)
-(set-face-background 'show-paren-match (face-background 'default))
-(set-face-foreground 'show-paren-match "#def")
-(set-face-attribute 'show-paren-match nil :weight 'extra-bold)
+(custom-set-faces!
+  '(show-paren-match :foreground "white" :background "red" :weight extra-bold))
 
 ;; Allows moving buffers with Ctrl-c <Arrow>
 (global-set-key (kbd "C-c <left>")  'windmove-left)
@@ -116,11 +117,17 @@
 ;; ibuffer instead of list-buffer
 (global-set-key [remap list-buffers] 'ibuffer)
 
+;; Ivy Rich Icons
+(use-package! all-the-icons-ivy-rich
+  :init (all-the-icons-ivy-rich-mode 1))
+(setq all-the-icons-ivy-rich-color-icon t)
+
+
 ;; Treemacs config
 (use-package! treemacs
   :init (setq treemacs-no-png-images t
               treemacs-space-between-root-nodes nil
-              treemacs-window-background-color (cons "#1a1a1a" "blue")
+              treemacs-window-background-color (cons "color-233" "color-19")
               treemacs-collapse-dirs 5)
   :config
   ;; Custom nerd icons theme
@@ -134,9 +141,9 @@
   (global-set-key [f8] 'treemacs)
 
   ;; Set git colors
-  (set-face-foreground 'treemacs-git-modified-face "red1")
-  (set-face-foreground 'treemacs-git-added-face "green2")
-  (set-face-foreground 'treemacs-git-conflict-face "yellow1"))
+  (set-face-foreground 'treemacs-git-modified-face "red")
+  (set-face-foreground 'treemacs-git-added-face "color-70")
+  (set-face-foreground 'treemacs-git-conflict-face "color-226"))
 
 ;; Projectile config
 (use-package! projectile
@@ -214,6 +221,10 @@
               lsp-keymap-prefix "C-c C-l"
               read-process-output-max (* 1024 1024)))
 
+;; Fix LSP and Molokai
+(custom-set-faces!
+ '(lsp-face-highlight-textual :background "color-18"))
+
 ;; Replace all-the-icons functions with their nerd-icons counterparts for terminal support
 (with-eval-after-load 'all-the-icons
   (require 'nerd-icons)
@@ -240,6 +251,7 @@
   (fset #'all-the-icons-octicon #'nerd-icons-octicon)
   (fset #'all-the-icons-fileicon #'nerd-icons-fileicon)
   (fset #'all-the-icons-material #'nerd-icons-material)
+  (fset #'all-the-icons-alltheicon #'nerd-icons-material)
   (fset #'all-the-icons-wicon #'nerd-icons-wicon))
 
 ;; LSP config for Java 8 Coretto
