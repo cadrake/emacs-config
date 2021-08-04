@@ -8,16 +8,24 @@
 (setq user-full-name "Alex Drake"
       user-mail-address "adrake@attentivemobile.com")
 
-;; Load my custom elisp directories
-(add-to-list 'load-path "~/.doom.d/lisp/")
+;; Load additional elisp directories
+(add-to-list 'load-path "~/.doom.d/custom/")
+(add-to-list 'load-path "~/.doom.d/extensions")
+
+;; Load extension scripts
+(require 'subr+)
 
 ;; Load my custom lisp files
 (require 'nerd-icons-treemacs-theme)
+(require 'org-tagging-support)
 
-;; DOOM
+;; DOOM themes
 (use-package! doom-themes
   :config
-  (setq doom-molokai-brighter-comments t)
+  (setq doom-molokai-brighter-comments t
+        doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  ;; Enable molokai theme
   (load-theme 'doom-molokai t)
 
   ;; corrects (and improves) org-mode's native fontification.
@@ -28,7 +36,7 @@
       doom-modeline-major-mode-icon t
       doom-modeline-major-mode-color-icon t
       doom-modeline-unicode-fallback t
-      doom-modeline-vcs-max-length 20)
+      doom-modeline-vcs-max-length 40)
 
 ;; Display absolute line numbers
 (setq display-line-numbers-type t)
@@ -127,6 +135,8 @@
   :init (all-the-icons-ivy-rich-mode 1))
 (setq all-the-icons-ivy-rich-color-icon t)
 
+;; Dired Icons
+(add-hook! 'dired-mode-hook 'all-the-icons-dired-mode)
 
 ;; Treemacs config
 (use-package! treemacs
@@ -144,6 +154,10 @@
 
   ;; Key bindings
   (global-set-key [f8] 'treemacs)
+
+  ;; Other config
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode nil)
 
   ;; Set git colors
   (set-face-foreground 'treemacs-git-modified-face "red")
@@ -163,6 +177,8 @@
 (use-package! org
   :init (setq org-directory "~/Dropbox/org"
               org-agenda-files '("~/Dropbox/org/work/attentive")
+              org-auto-align-tags t
+              org-agenda-align-tags-to-column t
               org-hide-emphasis-markers t)
   :hook (org-mode . (lambda () (electric-indent-local-mode -1)))
   :hook (org-mode . (lambda () (visual-line-mode 0))))
@@ -178,6 +194,9 @@
   :hook (yaml-mode . (lambda () "Disable word wrap" (visual-line-mode 0)))
   :mode "\\.yml\\'"
   :mode "\\.yaml\\'")
+
+;; Json Mode configuration
+(setq-hook! 'json-mode-hook js-indent-level 2)
 
 ;; Associate dockerfile-mode with Dockerfile
 (use-package! dockerfile-mode
@@ -214,8 +233,8 @@
 (setq-hook! 'java-mode-hook tab-width 4)
 (setq-hook! 'java-mode-hook indent-tabs-mode nil)
 
-;; Json Mode Indentation
-(setq-hook! 'json-mode-hook js-indent-level 2)
+;; Python LSP Config
+;; (add-hook! 'pipenv-activate #'lsp-restart-workspace)
 
 ;; LSP Mode config
 (use-package! lsp-mode
@@ -224,6 +243,7 @@
               lsp-auto-guess-root nil
               lsp-enable-file-watchers nil
               lsp-keymap-prefix "C-c C-l"
+              lsp-terraform-server '("terraform-ls" "serve")
               read-process-output-max (* 1024 1024)))
 
 ;; Fix LSP and Molokai
@@ -260,9 +280,8 @@
   (fset #'all-the-icons-wicon #'nerd-icons-wicon))
 
 ;; Debugging
-;;(setq debug-on-error t)
+(setq debug-on-error t)
 ;;(debug-on-entry 'self-insert-command)
-
 
 ;; LSP config for Java 8 Coretto
 (setq lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/0.57.0/jdt-language-server-0.57.0-202006172108.tar.gz"

@@ -1,4 +1,4 @@
-;;; $DOOMDIR/lisp/nerd-icons-treemacs-theme.el -*- lexical-binding: t; -*-
+;;; $DOOMDIR/custom/nerd-icons-treemacs-theme.el -*- lexical-binding: t; -*-
 
 (require 'nerd-icons)
 (require 'treemacs)
@@ -199,6 +199,7 @@
     (treemacs-create-icon :icon (format "  %s%s" (nerd-icons-fileicon "tex" :v-adjust 0 :face 'nerd-icons-dsilver) treemacs-nerd-icons-tab) :extensions ("tex") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (nerd-icons-fileicon "typescript-alt" :v-adjust 0 :face 'nerd-icons-blue) treemacs-nerd-icons-tab) :extensions ("ts") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (nerd-icons-fileicon "tsx-alt" :v-adjust 0 :face 'nerd-icons-lgreen) treemacs-nerd-icons-tab) :extensions ("tsx") :fallback 'same-as-icon)
+    (treemacs-create-icon :icon (format "  %s%s" (nerd-icons-fileicon "terraform" :v-adjust 0 :face 'nerd-icons-yellow) treemacs-nerd-icons-tab) :extensions ("tf" "tfvars") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (nerd-icons-fileicon "vagrant" :v-adjust 0 :face 'nerd-icons-blue) treemacs-nerd-icons-tab) :extensions ("vagrantfile") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (nerd-icons-fileicon "vue" :v-adjust 0 :face 'nerd-icons-green) treemacs-nerd-icons-tab) :extensions ("vue") :fallback 'same-as-icon)
     (treemacs-create-icon :icon (format "  %s%s" (nerd-icons-fileicon "excel" :v-adjust 0 :face 'nerd-icons-green) treemacs-nerd-icons-tab) :extensions ("xls" "xlsx" "xlsm" "ods" "fods") :fallback 'same-as-icon)
