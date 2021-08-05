@@ -8,6 +8,9 @@
 (setq user-full-name "Alex Drake"
       user-mail-address "adrake@attentivemobile.com")
 
+;; Special constant for WSL
+(defconst IS-WINDOWS-WSL (and (eq system-type 'gnu/linux) (getenv "WSL_DISTRO_NAME")))
+
 ;; Load additional elisp directories
 (add-to-list 'load-path "~/.doom.d/custom/")
 (add-to-list 'load-path "~/.doom.d/extensions")
@@ -85,7 +88,10 @@
 ;; Magit config
 (use-package! magit
   :init (setq magit-git-executable "/usr/bin/git")
-  :bind (("C-c v b" . magit-branch-and-checkout)))
+  :bind (("C-c v b" . magit-branch-and-checkout))
+  :config
+        (set-face-foreground 'magit-diff-added "color-22")
+        (set-face-foreground 'magit-diff-added-highlight "color-22"))
 
 ;; Enable backup files and send them to a better directory
 (setq auto-save-default t
@@ -266,7 +272,6 @@
   (fset #'all-the-icons-icon-for-mode #'nerd-icons-icon-for-mode)
   (fset #'all-the-icons-icon-for-url #'nerd-icons-icon-for-url)
   (fset #'all-the-icons-icon-for-buffer #'nerd-icons-icon-for-buffer)
-
   (fset #'all-the-icons-icon-family #'nerd-icons-icon-family)
   (fset #'all-the-icons-icon-family-for-buffer #'nerd-icons-icon-family-for-buffer)
   (fset #'all-the-icons-icon-family-for-file #'nerd-icons-icon-family-for-file)
@@ -289,3 +294,7 @@
                                          :path "/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home"
                                          :default t)]
       lsp-java-java-path "/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home/bin/java")
+
+;; Fix bug in xclip-mode where xclip-program is unset when xclip-method is powershell
+(if IS-WINDOWS-WSL (setq xclip-method 'powershell
+                         xclip-program "powershell.exe"))
