@@ -8,6 +8,8 @@
 (package! jenkinsfile-mode)
 (package! csv-mode)
 (package! json-mode)
+(package! protobuf-mode)
+(package! graphviz-dot-mode)
 
 ;; Helpers
 (package! smartscan)
@@ -20,9 +22,9 @@
 
 ;; My Stuff
 ;; Local nerd-icons for development
-;; (package! nerd-icons
-;;   :recipe (:local-repo "/Users/adrake/Code/elisp/nerd-icons.el"
-;;            :build (:not compile)))
-;; Github nerd-icons for production
 (package! nerd-icons
-  :recipe (:host github :repo "cadrake/nerd-icons.el"))
+  :recipe (:local-repo "/Users/adrake/Code/elisp/nerd-icons.el"
+           :build (:not compile)))
+;; Github nerd-icons for production
+;; (package! nerd-icons
+;;   :recipe (:host github :repo "cadrake/nerd-icons.el"))

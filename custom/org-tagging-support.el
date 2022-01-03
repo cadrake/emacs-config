@@ -34,7 +34,7 @@
   "Identifies a strings actual length ignoring any org tags"
   (let* ((trimmed-str (replace-regexp-in-string " *\\(:[^:]+\\)+:$" "" line))
          (trimmed-len (string-width trimmed-str)))
-  (eval (+ trimmed-len 1))))
+  (eval (+ trimmed-len 2))))
 
 (provide 'org-tagging-support)
 

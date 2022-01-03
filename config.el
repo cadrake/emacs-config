@@ -88,14 +88,19 @@
 ;; Magit config
 (use-package! magit
   :init (setq magit-git-executable "/usr/bin/git")
-  :bind (("C-c v b" . magit-branch-and-checkout))
+  :bind
+  (("C-c v b" . magit-branch-and-checkout))
   :config
-        (set-face-foreground 'magit-diff-added "color-22")
-        (set-face-foreground 'magit-diff-added-highlight "color-22"))
+  (set-face-foreground 'magit-diff-added "color-22")
+  (set-face-foreground 'magit-diff-added-highlight "color-22"))
 
 ;; Enable backup files and send them to a better directory
 (setq auto-save-default t
       make-backup-files t)
+
+;; Fix bug in xclip-mode where xclip-program is unset when xclip-method is powershell
+(if IS-WINDOWS-WSL (setq xclip-method 'powershell
+                         xclip-program "powershell.exe"))
 
 (let ((backup-dir "~/.doom.d/backups/")
       (auto-saves-dir "~/.doom.d/auto-saves/"))
@@ -129,6 +134,9 @@
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
 (setq-default whitespace-style (delete 'lines-tail whitespace-style))
+
+;; Parentheses setup
+(setq electric-pair-preserve-balance nil)
 
 ;; Disable exit confirmation
 (setq confirm-kill-emacs nil)
@@ -182,7 +190,7 @@
 ;; Org Mode config
 (use-package! org
   :init (setq org-directory "~/Dropbox/org"
-              org-agenda-files '("~/Dropbox/org/work/attentive")
+              org-agenda-files (directory-files-recursively "~/Dropbox/org/work/attentive" "\\.org")
               org-auto-align-tags t
               org-agenda-align-tags-to-column t
               org-hide-emphasis-markers t)
@@ -204,6 +212,14 @@
 ;; Json Mode configuration
 (setq-hook! 'json-mode-hook js-indent-level 2)
 
+;; Graphviz Mode Config
+(use-package! graphviz-dot-mode
+  :config
+  (setq graphviz-dot-indent-width 4)
+  :mode "\\.gv\\'")
+
+(use-package! company-graphviz-dot)
+
 ;; Associate dockerfile-mode with Dockerfile
 (use-package! dockerfile-mode
   :mode "Dockerfile\\'")
@@ -211,7 +227,8 @@
 ;; Associate jenkins files with jenkinsfile-mode
 (use-package! jenkinsfile-mode
   :mode "Jenkinsfile\\'"
-  :mode "jenkins.pipeline\\'")
+  :mode "jenkins.pipeline\\'"
+  :init (add-to-list 'company-backends 'company-keywords))
 
 ;; Associate csv-mode with csv's
 (use-package! csv-mode
@@ -224,6 +241,10 @@
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "/usr/local/bin/pandoc"))
+
+;; Associate protobuf-mode with proto files
+(use-package! protobuf-mode
+  :mode "\\.proto\\'")
 
 ;; Expand Region config
 (use-package! expand-region
@@ -239,9 +260,6 @@
 (setq-hook! 'java-mode-hook tab-width 4)
 (setq-hook! 'java-mode-hook indent-tabs-mode nil)
 
-;; Python LSP Config
-;; (add-hook! 'pipenv-activate #'lsp-restart-workspace)
-
 ;; LSP Mode config
 (use-package! lsp-mode
   :init (setq lsp-idle-delay 0.500
@@ -249,7 +267,7 @@
               lsp-auto-guess-root nil
               lsp-enable-file-watchers nil
               lsp-keymap-prefix "C-c C-l"
-              lsp-terraform-server '("terraform-ls" "serve")
+              ;;lsp-terraform-server '("terraform-ls" "serve") ;;terraform-ls is still buggy as fuck
               read-process-output-max (* 1024 1024)))
 
 ;; Fix LSP and Molokai
@@ -288,13 +306,26 @@
 (setq debug-on-error t)
 ;;(debug-on-entry 'self-insert-command)
 
-;; LSP config for Java 8 Coretto
-(setq lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/0.57.0/jdt-language-server-0.57.0-202006172108.tar.gz"
-      lsp-java-configuration-runtimes '[(:name "JavaCorretto-8"
-                                         :path "/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home"
-                                         :default t)]
-      lsp-java-java-path "/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home/bin/java")
+;; TODO: Can I get this from JAVA_HOME or some shit
+;;
+;; lsp-java Configurations
+;;
 
-;; Fix bug in xclip-mode where xclip-program is unset when xclip-method is powershell
-(if IS-WINDOWS-WSL (setq xclip-method 'powershell
-                         xclip-program "powershell.exe"))
+;; Java 8 Coretto w/Gradle
+;; (use-package! lsp-java :after lsp
+;;               :init (setq lsp-java-java-path "/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home/bin/java"
+;;                           lsp-java-import-gradle-java-home "/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home/bin/java"
+;;                           lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/0.57.0/jdt-language-server-0.57.0-202006172108.tar.gz"
+;;                           lsp-java-configuration-runtimes '[(:name "JavaCorretto-8"
+;;                                                              :path "/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home"
+;;                                                              :default t)]
+;;                           lsp-java-vmargs (list "-noverify" "--enable-preview")))
+
+;; Java 11 Coretto w/Gradle
+(use-package! lsp-java :after lsp
+              :init (setq lsp-java-java-path "/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home/bin/java"
+                          lsp-java-import-gradle-java-home "/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home/bin/java"
+                          lsp-java-configuration-runtimes '[(:name "JavaCoretto-11"
+                                                             :path "/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home"
+                                                             :default t)]
+                          lsp-java-vmargs (list "-noverify" "--enable-preview")))
