@@ -217,7 +217,6 @@
   :config
   (setq graphviz-dot-indent-width 4)
   :mode "\\.gv\\'")
-
 (use-package! company-graphviz-dot)
 
 ;; Associate dockerfile-mode with Dockerfile
@@ -253,12 +252,17 @@
 
 ;; Company mode config
 (setq company-minimum-prefix-length 2
-      company-idle-delay 0.2)
+      company-idle-delay 0.2
+      company-shell-dont-fetch-meta t)
 
 ;; Java Config
 (setq-hook! 'java-mode-hook c-basic-offset 4)
 (setq-hook! 'java-mode-hook tab-width 4)
 (setq-hook! 'java-mode-hook indent-tabs-mode nil)
+
+;; Go Config
+(add-hook! 'go-mode-hook (lambda () ((setq gofmt-command "goimports")
+                                (add-hook! 'before-save-hook 'gofmt-before-save))))
 
 ;; LSP Mode config
 (use-package! lsp-mode
