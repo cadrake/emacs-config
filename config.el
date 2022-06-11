@@ -36,10 +36,11 @@
 
 ;; DOOM modeline
 (setq doom-modeline-icon t
+      doom-modeline-buffer-file-name-style 'truncate-upto-project
       doom-modeline-major-mode-icon t
       doom-modeline-major-mode-color-icon t
       doom-modeline-unicode-fallback t
-      doom-modeline-vcs-max-length 40)
+      doom-modeline-vcs-max-length 50)
 
 ;; Display absolute line numbers
 (setq display-line-numbers-type t)
@@ -85,6 +86,10 @@
 ;; Enable smartscan mode
 (global-smartscan-mode t)
 
+;; Swiper ISearch
+(global-set-key (kbd "C-s") 'swiper-isearch)
+(global-set-key (kbd "C-r") 'swiper-isearch-C-r)
+
 ;; Magit config
 (use-package! magit
   :init (setq magit-git-executable "/usr/bin/git")
@@ -102,6 +107,7 @@
 (if IS-WINDOWS-WSL (setq xclip-method 'powershell
                          xclip-program "powershell.exe"))
 
+;; Better backups
 (let ((backup-dir "~/.doom.d/backups/")
       (auto-saves-dir "~/.doom.d/auto-saves/"))
   (dolist (dir (list backup-dir auto-saves-dir))
@@ -135,8 +141,11 @@
 (setq-default tab-width 4)
 (setq-default whitespace-style (delete 'lines-tail whitespace-style))
 
-;; Parentheses setup
-(setq electric-pair-preserve-balance nil)
+;; Smartparens config
+(use-package! smartparens
+  :config
+  (sp-pair "'" nil :actions :rem)
+  (sp-pair "\"" nil :actions :rem))
 
 ;; Disable exit confirmation
 (setq confirm-kill-emacs nil)
@@ -192,15 +201,45 @@
   :init (setq org-directory "~/Dropbox/org"
               org-agenda-files (directory-files-recursively "~/Dropbox/org/work/attentive" "\\.org")
               org-auto-align-tags t
-              org-agenda-align-tags-to-column t
-              org-hide-emphasis-markers t)
+              org-pretty-entities t
+              org-hide-emphasis-markers t
+              org-agenda-block-separator nil
+              org-agenda-tags-column (- 8 (window-body-width))
+              org-agenda-compact-blocks t)
   :hook (org-mode . (lambda () (electric-indent-local-mode -1)))
   :hook (org-mode . (lambda () (visual-line-mode 0))))
-(use-package! org-fancy-priorities
-  :config (setq org-fancy-priorities-list '("" " " "  ")))
 (after! org
   (setq org-startup-indented nil))
 (map! "C-c [" #'org-insert-structure-template) ;; C-, is funky with terminals
+
+;; Org Mode additional config
+(setq org-agenda-prefix-format
+      (quote
+       ((agenda . " %i %-26:c%?-12t% s")
+        (timeline . "  % s")
+        (todo . " %i %-26c %-40(concat (org-format-outline-path (org-get-outline-path)))")
+        (tags . " %i %-26:c")
+        (search . " %i %-26:c"))))
+(use-package! org-fancy-priorities
+  :hook (org-mode . org-fancy-priorities-mode)
+  :config (setq org-fancy-priorities-list '("" " " "  " "   ")))
+(use-package! org-super-agenda
+  :init (setq org-super-agenda-header-prefix " "
+              org-super-agenda-groups
+              '((:name "Prioritized" :priority>= "C" :order 1 :face (:background "color-241"))
+                (:name "Jira Tickets" :order 2 :face (:background "color-234") :and (:property "assignee" :property "type-id"))
+                (:auto-category t :auto-parent t :priority< "C" :order 3))))
+(custom-set-faces!
+  '(org-super-agenda-header :weight ultra-bold :background "blue" :underline "white"))
+(org-super-agenda-mode)
+
+;; Org Jira (Enabled if environment variables exist)
+(if (> (length (getenv "JIRALIB_URL")) 0)
+    (progn
+      (setq jiralib-url (getenv "JIRALIB_URL")
+            org-jira-done-states '("Closed" "Resolved" "Done" "Won't Fix") ;; Attentive Jira
+            org-agenda-files (append (directory-files-recursively "~/.org-jira" "\\.org") org-agenda-files))
+      (if (not (file-directory-p "~/.org-jira")) (make-directory "~/.org-jira"))))
 
 ;; Associate yaml-mode with yaml files and enable whitespace
 (use-package! yaml-mode
@@ -261,8 +300,8 @@
 (setq-hook! 'java-mode-hook indent-tabs-mode nil)
 
 ;; Go Config
-(add-hook! 'go-mode-hook (lambda () ((setq gofmt-command "goimports")
-                                (add-hook! 'before-save-hook 'gofmt-before-save))))
+(setq-hook! 'go-mode-hook gofmt-command "goimports")
+(setq-hook! 'go-mode-hook before-save-hook 'gofmt-before-save)
 
 ;; LSP Mode config
 (use-package! lsp-mode
@@ -271,7 +310,7 @@
               lsp-auto-guess-root nil
               lsp-enable-file-watchers nil
               lsp-keymap-prefix "C-c C-l"
-              ;;lsp-terraform-server '("terraform-ls" "serve") ;;terraform-ls is still buggy as fuck
+              lsp-terraform-server '("terraform-ls" "serve")
               read-process-output-max (* 1024 1024)))
 
 ;; Fix LSP and Molokai

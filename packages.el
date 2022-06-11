@@ -20,6 +20,10 @@
 (package! all-the-icons)
 (package! all-the-icons-ivy-rich)
 
+;; Extensions
+(package! org-super-agenda)
+(package! org-jira)
+
 ;; My Stuff
 ;; Local nerd-icons for development
 ;; (package! nerd-icons

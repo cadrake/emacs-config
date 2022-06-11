@@ -13,28 +13,27 @@
     (setq org-tags-column (find-longest-region-line (window-start) (window-end)))
     (org-align-tags t)))
 
+;; TODO: Handle collapsd text like embedded links (call buffer substring after removing tags?)
 (defun find-longest-region-line (beg end)
   "Find the longest line in region."
-  (message (format "Region size beginning %d, end %d" beg end))
-  (let* ((real-end     (save-excursion (goto-char end) (end-of-line) (point)))
-         (buf-str      (buffer-substring-of-visible beg real-end))
-         (lines        (split-string buf-str "\n"))
-         (width-max    0)
-         (count        0))
-    (cl-loop for i in lines
-             do (progn
-                  (let ((real-len (org-calc-length-minus-tags i)))
-                      (when (> real-len width-max)
-                        (setq width-max real-len))
-                    (cl-incf count))))
-    (message (format "Setting tags column to %d" width-max))
+  (message "Region size beginning %d, end %d" beg end)
+  (let ((width-max 0))
+    (while (not (eobp))
+      (let* ((line-start (save-excursion (forward-line 0) (point)))
+             (line-end (save-excursion (forward-line 1) (- (point) 1)))
+             (line (buffer-substring-of-visible line-start line-end)))
+        (if (char-equal (char-after line-start) ?* )
+            (let ((real-len (org-calc-length-minus-tags line)))
+              (when (> real-len width-max) (setq width-max real-len)))))
+      (forward-line 1))
+    (message "Setting tags column to %d" width-max)
     (eval width-max)))
 
 (defun org-calc-length-minus-tags (line)
   "Identifies a strings actual length ignoring any org tags"
   (let* ((trimmed-str (replace-regexp-in-string " *\\(:[^:]+\\)+:$" "" line))
          (trimmed-len (string-width trimmed-str)))
-  (eval (+ trimmed-len 2))))
+    (eval (+ trimmed-len 2))))
 
 (provide 'org-tagging-support)
 
