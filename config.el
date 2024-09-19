@@ -6,20 +6,24 @@
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
 (setq user-full-name "Alex Drake"
-      user-mail-address "adrake@attentivemobile.com")
+      user-mail-address "alexd@cypress.io")
 
 ;; Special constant for WSL
 (defconst IS-WINDOWS-WSL (and (eq system-type 'gnu/linux) (getenv "WSL_DISTRO_NAME")))
 
 ;; Load additional elisp directories
-(add-to-list 'load-path "~/.doom.d/custom/")
-(add-to-list 'load-path "~/.doom.d/extensions")
+(add-to-list 'load-path (concat (getenv "DOOMDIR") "/custom"))
+(add-to-list 'load-path (concat (getenv "DOOMDIR") "/extensions"))
 
 ;; Load extension scripts
+(require 'auth-source)
 (require 'subr+)
 
+;; Enable disabled commands
+(put 'downcase-region 'disabled nil)
+
 ;; Load my custom lisp files
-(require 'nerd-icons-treemacs-theme)
+;;(require 'nerd-icons-treemacs-theme)
 (require 'org-tagging-support)
 
 ;; DOOM themes
@@ -44,6 +48,9 @@
 
 ;; Display absolute line numbers
 (setq display-line-numbers-type t)
+
+;; Configure auth-source
+(setq auth-sources '("~/.authinfo.gpg" "~/.authinfo" "~/.netrc"))
 
 ;; Terminal capabilities (Avoids phanton self inserts)
 (setq xterm-extra-capabilities nil)
@@ -86,9 +93,12 @@
 ;; Enable smartscan mode
 (global-smartscan-mode t)
 
-;; Swiper ISearch
-(global-set-key (kbd "C-s") 'swiper-isearch)
-(global-set-key (kbd "C-r") 'swiper-isearch-C-r)
+;; Enable semantic mode and sticky functions
+(add-to-list 'semantic-default-submodes 'global-semantic-stickyfunc-mode)
+(semantic-mode 1)
+
+;; Consult ISearch
+(global-set-key (kbd "C-s") 'consult-line)
 
 ;; Magit config
 (use-package! magit
@@ -108,8 +118,8 @@
                          xclip-program "powershell.exe"))
 
 ;; Better backups
-(let ((backup-dir "~/.doom.d/backups/")
-      (auto-saves-dir "~/.doom.d/auto-saves/"))
+(let ((backup-dir (concat (getenv "DOOMDIR") "/backups"))
+      (auto-saves-dir (concat (getenv "DOOMDIR") "/auto-saves")))
   (dolist (dir (list backup-dir auto-saves-dir))
     (when (not (file-directory-p dir))
       (make-directory dir t)))
@@ -153,13 +163,8 @@
 ;; ibuffer instead of list-buffer
 (global-set-key [remap list-buffers] 'ibuffer)
 
-;; Ivy Rich Icons
-(use-package! all-the-icons-ivy-rich
-  :init (all-the-icons-ivy-rich-mode 1))
-(setq all-the-icons-ivy-rich-color-icon t)
-
 ;; Dired Icons
-(add-hook! 'dired-mode-hook 'all-the-icons-dired-mode)
+(add-hook! 'dired-mode-hook 'nerd-icons-dired-mode)
 
 ;; Treemacs config
 (use-package! treemacs
@@ -199,7 +204,7 @@
 ;; Org Mode config
 (use-package! org
   :init (setq org-directory "~/Dropbox/org"
-              org-agenda-files (directory-files-recursively "~/Dropbox/org/work/attentive" "\\.org")
+              org-agenda-files (directory-files-recursively "~/Documents/org" "\\.org")
               org-auto-align-tags t
               org-pretty-entities t
               org-hide-emphasis-markers t
@@ -234,12 +239,13 @@
 (org-super-agenda-mode)
 
 ;; Org Jira (Enabled if environment variables exist)
-(if (> (length (getenv "JIRALIB_URL")) 0)
-    (progn
-      (setq jiralib-url (getenv "JIRALIB_URL")
-            org-jira-done-states '("Closed" "Resolved" "Done" "Won't Fix") ;; Attentive Jira
-            org-agenda-files (append (directory-files-recursively "~/.org-jira" "\\.org") org-agenda-files))
-      (if (not (file-directory-p "~/.org-jira")) (make-directory "~/.org-jira"))))
+(if (and (getenv "JIRALIB_HOST") (getenv "JIRALIB_USERNAME"))
+   (progn
+     (setq jiralib-url (format "https://%s" (getenv "JIRALIB_HOST"))
+           jiralib-token (cons "Authorization" (format "Basic %s" (base64-encode-string (concat (getenv "JIRALIB_USERNAME") ":" (auth-source-pick-first-password :host (getenv "JIRALIB_HOST"))) t)))
+           org-jira-done-states '("Canceled" "Done")
+           org-agenda-files (append (directory-files-recursively "~/.org-jira" "\\.org") org-agenda-files))
+     (if (not (file-directory-p "~/.org-jira")) (make-directory "~/.org-jira"))))
 
 ;; Associate yaml-mode with yaml files and enable whitespace
 (use-package! yaml-mode
@@ -249,14 +255,21 @@
   :mode "\\.yaml\\'")
 
 ;; Json Mode configuration
-(setq-hook! 'json-mode-hook js-indent-level 2)
+(add-hook! 'json-mode-hook
+  (lambda ()
+    (make-local-variable 'js-indent-level)
+    (setq js-indent-level 2)))
+(setq-hook! 'json-mode-hook +format-with-lsp nil) ;; Json LSP overrides spacing
+
+;; Typescript Mode config
+(setq-hook! 'typescript-mode-hook typescript-indent-level 2)
 
 ;; Graphviz Mode Config
 (use-package! graphviz-dot-mode
   :config
   (setq graphviz-dot-indent-width 4)
+  :hook (graphviz-dot-mode . company-mode)
   :mode "\\.gv\\'")
-(use-package! company-graphviz-dot)
 
 ;; Associate dockerfile-mode with Dockerfile
 (use-package! dockerfile-mode
@@ -313,43 +326,66 @@
               lsp-terraform-server '("terraform-ls" "serve")
               read-process-output-max (* 1024 1024)))
 
+;; Configure format-all-mode and hook into various editor modes
+(use-package! format-all
+  :commands format-all-mode
+  :hook (rsjx-mode-hook . format-all-mode)
+  :hook (python-mode-hook . format-all-mode)
+  :hook (java-mode-hook . format-all-mode)
+  :hook (json-mode-hook . format-all-mode))
+
 ;; Fix LSP and Molokai
 (custom-set-faces!
- '(lsp-face-highlight-textual :background "color-18"))
+  '(lsp-face-highlight-textual :background "color-18"))
 
 ;; Replace all-the-icons functions with their nerd-icons counterparts for terminal support
 (with-eval-after-load 'all-the-icons
   (require 'nerd-icons)
 
-  (fset #'all-the-icons-insert #'nerd-icons-insert)
-  (fset #'all-the-icons-insert-faicon #'nerd-icons-insert-faicon)
-  (fset #'all-the-icons-insert-fileicon #'nerd-icons-insert-fileicon)
-  (fset #'all-the-icons-insert-material #'nerd-icons-insert-material)
-  (fset #'all-the-icons-insert-octicon #'nerd-icons-insert-octicon)
-  (fset #'all-the-icons-insert-wicon #'nerd-icons-insert-wicon)
+  (defalias 'all-the-icons-insert 'nerd-icons-insert)
+  (defalias 'all-the-icons-insert-faicon 'nerd-icons-insert-faicon)
+  (defalias 'all-the-icons-insert-fileicon 'nerd-icons-insert-fileicon)
+  (defalias 'all-the-icons-insert-material 'nerd-icons-insert-material)
+  (defalias 'all-the-icons-insert-octicon 'nerd-icons-insert-octicon)
+  (defalias 'all-the-icons-insert-wicon 'nerd-icons-insert-wicon)
 
-  (fset #'all-the-icons-icon-for-dir #'nerd-icons-icon-for-dir)
-  (fset #'all-the-icons-icon-for-file #'nerd-icons-icon-for-file)
-  (fset #'all-the-icons-icon-for-mode #'nerd-icons-icon-for-mode)
-  (fset #'all-the-icons-icon-for-url #'nerd-icons-icon-for-url)
-  (fset #'all-the-icons-icon-for-buffer #'nerd-icons-icon-for-buffer)
-  (fset #'all-the-icons-icon-family #'nerd-icons-icon-family)
-  (fset #'all-the-icons-icon-family-for-buffer #'nerd-icons-icon-family-for-buffer)
-  (fset #'all-the-icons-icon-family-for-file #'nerd-icons-icon-family-for-file)
-  (fset #'all-the-icons-icon-family-for-mode #'nerd-icons-icon-family-for-mode)
+  (defalias 'all-the-icons-icon-for-dir 'nerd-icons-icon-for-dir)
+  (defalias 'all-the-icons-icon-for-file 'nerd-icons-icon-for-file)
+  (defalias 'all-the-icons-icon-for-mode 'nerd-icons-icon-for-mode)
+  (defalias 'all-the-icons-icon-for-url 'nerd-icons-icon-for-url)
+  (defalias 'all-the-icons-icon-for-buffer 'nerd-icons-icon-for-buffer)
+  (defalias 'all-the-icons-icon-family 'nerd-icons-icon-family)
+  (defalias 'all-the-icons-icon-family-for-buffer 'nerd-icons-icon-family-for-buffer)
+  (defalias 'all-the-icons-icon-family-for-file 'nerd-icons-icon-family-for-file)
+  (defalias 'all-the-icons-icon-family-for-mode 'nerd-icons-icon-family-for-mode)
 
-  (fset #'all-the-icons-faicon #'nerd-icons-faicon)
-  (fset #'all-the-icons-octicon #'nerd-icons-octicon)
-  (fset #'all-the-icons-fileicon #'nerd-icons-fileicon)
-  (fset #'all-the-icons-material #'nerd-icons-material)
-  (fset #'all-the-icons-alltheicon #'nerd-icons-material)
-  (fset #'all-the-icons-wicon #'nerd-icons-wicon))
+  (defalias 'all-the-icons-faicon (lambda (name &rest args) (ati-nerd-icons-adapter "faicon" name args)))
+  (defalias 'all-the-icons-octicon (lambda (name &rest args) (ati-nerd-icons-adapter "octicon" name args)))
+  (defalias 'all-the-icons-fileicon (lambda (name &rest args) (ati-nerd-icons-adapter "fileicon" name args)))
+  (defalias 'all-the-icons-material (lambda (name &rest args) (ati-nerd-icons-adapter "material" name args)))
+  (defalias 'all-the-icons-alltheicon (lambda (name &rest args) (ati-nerd-icons-adapter "alltheicon" name args)))
+  (defalias 'all-the-icons-wicon (lambda (name &rest args) (ati-nerd-icons-adapter "wicon" name args))))
+
+(defun ati-nerd-icons-adapter (icon-set icon-name &rest args)
+  "Takes an all-the-icons icon set and name and returns the nerd-icons equivalent"
+  (pcase icon-set
+    ("faicon" (nerd-icons-faicon (format "nf-fa-%s" (to-nerd-name icon-name)) args))
+    ("octicon" (nerd-icons-octicon (format "nf-oct-%s" (to-nerd-name icon-name)) args))
+    ("fileicon" (nerd-icons-faicon (format "nf-fa-%s" (to-nerd-name icon-name)) args))
+    ("material" (nerd-icons-mdicon (format "nf-md-%s" (to-nerd-name icon-name)) args))
+    ("alltheicon" (nerd-icons-mdicon (format "nf-md-%s" (to-nerd-name icon-name))) args)
+    ("wicon" (nerd-icons-wicon (format "nf-weather-%s" (to-nerd-name icon-name))) args)))
+
+(defun to-nerd-name (name)
+  "Transforms some all-the-icons named icons into nerd-icon equivalents"
+  (if (string= name "light-bulb")
+        (eval "light_bulb")
+        (eval name)))
 
 ;; Debugging
 (setq debug-on-error t)
-;;(debug-on-entry 'self-insert-command)
+;;(debug-on-entry 'all-the-icons-octicon)
 
-;; TODO: Can I get this from JAVA_HOME or some shit
 ;;
 ;; lsp-java Configurations
 ;;
@@ -365,10 +401,19 @@
 ;;                           lsp-java-vmargs (list "-noverify" "--enable-preview")))
 
 ;; Java 11 Coretto w/Gradle
+;; (use-package! lsp-java :after lsp
+;;               :init (setq       lsp-java-java-path "/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home/bin/java"
+;;                           lsp-java-import-gradle-java-home "/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home/bin/java"
+;;                           lsp-java-configuration-runtimes '[(:name "JavaCoretto-11"
+;;                                                              :path "/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home"
+;;                                                              :default t)]
+;;                           lsp-java-vmargs (list "-noverify" "--enable-preview")))
+
+;; Java 17 w/Gradle
 (use-package! lsp-java :after lsp
-              :init (setq lsp-java-java-path "/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home/bin/java"
-                          lsp-java-import-gradle-java-home "/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home/bin/java"
-                          lsp-java-configuration-runtimes '[(:name "JavaCoretto-11"
-                                                             :path "/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home"
+              :init (setq lsp-java-java-path "/Library/Java/JavaVirtualMachines/openjdk.jdk/Contents/Home/bin/java"
+                          lsp-java-import-gradle-java-home "/Library/Java/JavaVirtualMachines/openjdk.jdk/Contents/Home/bin/java"
+                          lsp-java-configuration-runtimes '[(:name "JavaSE-17"
+                                                             :path "/Library/Java/JavaVirtualMachines/openjdk.jdk/Contents/Home"
                                                              :default t)]
                           lsp-java-vmargs (list "-noverify" "--enable-preview")))

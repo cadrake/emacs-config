@@ -17,12 +17,19 @@
 (package! vdiff)
 
 ;; UI Improvements
-(package! all-the-icons)
-(package! all-the-icons-ivy-rich)
 
-;; Extensions
+
+;; Org Extensions
 (package! org-super-agenda)
 (package! org-jira)
+
+;; Icon Packages
+(package! all-the-icons)
+(package! all-the-icons-completion)
+
+(package! nerd-icons)
+(package! treemacs-nerd-icons)
+(package! nerd-icons-dired)
 
 ;; My Stuff
 ;; Local nerd-icons for development
@@ -30,5 +37,5 @@
 ;;   :recipe (:local-repo "/Users/adrake/Code/elisp/nerd-icons.el"
 ;;            :build (:not compile)))
 ;; Github nerd-icons for production
-(package! nerd-icons
-  :recipe (:host github :repo "cadrake/nerd-icons.el"))
+;; (package! nerd-icons
+;;   :recipe (:host github :repo "cadrake/nerd-icons.el"))
