@@ -241,11 +241,13 @@
 ;; Org Jira (Enabled if environment variables exist)
 (if (and (getenv "JIRALIB_HOST") (getenv "JIRALIB_USERNAME"))
    (progn
+     (if (not (file-directory-p "~/.org-jira")) (make-directory "~/.org-jira"))
      (setq jiralib-url (format "https://%s" (getenv "JIRALIB_HOST"))
            jiralib-token (cons "Authorization" (format "Basic %s" (base64-encode-string (concat (getenv "JIRALIB_USERNAME") ":" (auth-source-pick-first-password :host (getenv "JIRALIB_HOST"))) t)))
            org-jira-done-states '("Canceled" "Done")
            org-agenda-files (append (directory-files-recursively "~/.org-jira" "\\.org") org-agenda-files))
-     (if (not (file-directory-p "~/.org-jira")) (make-directory "~/.org-jira"))))
+     )
+)
 
 ;; Associate yaml-mode with yaml files and enable whitespace
 (use-package! yaml-mode
